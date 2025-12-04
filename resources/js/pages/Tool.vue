@@ -56,33 +56,35 @@
          </div>
 
          <!-- Board Totals -->
-         <div v-if="currentBoard?.totals && hasBoardTotals" class="flex items-center text-xs space-x-4 mr-4 flex-shrink-0 relative board-totals-wrapper text-gray-500 dark:text-gray-400">
-            <span v-if="currentBoard.totals.estimated_hours > 0 || currentBoard.totals.actual_hours > 0">
-              <span :class="boardHoursActualClass">{{ formatNum(currentBoard.totals.actual_hours) }}</span><template v-if="currentBoard.totals.estimated_hours > 0"> / {{ formatNum(currentBoard.totals.estimated_hours) }}</template> h
-            </span>
-            <span v-if="currentBoard.totals.estimated_cost > 0 || currentBoard.totals.actual_cost > 0">
-              <span :class="boardCostActualClass">{{ formatNum(currentBoard.totals.actual_cost) }}</span><template v-if="currentBoard.totals.estimated_cost > 0"> / {{ formatNum(currentBoard.totals.estimated_cost) }}</template> €
-            </span>
-            <!-- Copy & Download buttons -->
+         <div v-if="currentBoard?.totals && hasBoardTotals" class="flex items-center text-xs space-x-4 mr-4 flex-shrink-0 text-gray-500 dark:text-gray-400">
+            <div class="relative board-totals-wrapper flex items-center space-x-4">
+              <span v-if="currentBoard.totals.estimated_hours > 0 || currentBoard.totals.actual_hours > 0" class="cursor-help">
+                <span :class="boardHoursActualClass">{{ formatNum(currentBoard.totals.actual_hours) }}</span><template v-if="currentBoard.totals.estimated_hours > 0"> / {{ formatNum(currentBoard.totals.estimated_hours) }}</template> h
+              </span>
+              <span v-if="currentBoard.totals.estimated_cost > 0 || currentBoard.totals.actual_cost > 0" class="cursor-help">
+                <span :class="boardCostActualClass">{{ formatNum(currentBoard.totals.actual_cost) }}</span><template v-if="currentBoard.totals.estimated_cost > 0"> / {{ formatNum(currentBoard.totals.estimated_cost) }}</template> €
+              </span>
+              <!-- Board Breakdown Tooltip - positioned to the left so it doesn't cover buttons -->
+              <div class="board-totals-tooltip absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-3" style="width: 460px; z-index: 60;">
+                <div class="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-600 pb-1">Board Breakdown</div>
+                <div class="max-h-64 overflow-y-auto space-y-1">
+                  <div v-for="card in boardCardsWithEstimates" :key="card.id" class="flex justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                    <span class="mr-2">{{ card.title }}</span>
+                    <span class="flex space-x-2 flex-shrink-0">
+                      <span v-if="card.estimated_hours > 0 || card.actual_hours > 0"><span :class="getCardHoursClass(card)">{{ formatNum(card.actual_hours) }}</span><template v-if="card.estimated_hours > 0"> / {{ formatNum(card.estimated_hours) }}</template> h</span>
+                      <span v-if="card.estimated_cost > 0 || card.actual_cost > 0"><span :class="getCardCostClass(card)">{{ formatNum(card.actual_cost) }}</span><template v-if="card.estimated_cost > 0"> / {{ formatNum(card.estimated_cost) }}</template> €</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Copy & Download buttons - OUTSIDE the hover wrapper -->
             <button @click.stop="copyBreakdownToClipboard" class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Copy breakdown to clipboard">
               <Icon name="clipboard-document" type="micro" />
             </button>
             <button @click.stop="downloadBreakdownCSV" class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" title="Download CSV">
               <Icon name="arrow-down-tray" type="micro" />
             </button>
-            <!-- Board Breakdown Tooltip -->
-            <div class="board-totals-tooltip absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-2 z-50" style="width: 460px;">
-              <div class="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-600 pb-1">Board Breakdown</div>
-              <div class="max-h-64 overflow-y-auto space-y-1">
-                <div v-for="card in boardCardsWithEstimates" :key="card.id" class="flex justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                  <span class="mr-2">{{ card.title }}</span>
-                  <span class="flex space-x-2 flex-shrink-0">
-                    <span v-if="card.estimated_hours > 0 || card.actual_hours > 0"><span :class="getCardHoursClass(card)">{{ formatNum(card.actual_hours) }}</span><template v-if="card.estimated_hours > 0"> / {{ formatNum(card.estimated_hours) }}</template> h</span>
-                    <span v-if="card.estimated_cost > 0 || card.actual_cost > 0"><span :class="getCardCostClass(card)">{{ formatNum(card.actual_cost) }}</span><template v-if="card.estimated_cost > 0"> / {{ formatNum(card.estimated_cost) }}</template> €</span>
-                  </span>
-                </div>
-              </div>
-            </div>
          </div>
          
          <!-- Board Actions Dropdown -->
@@ -135,7 +137,7 @@
          </div>
 
          <!-- Board Members Avatars -->
-         <div v-if="currentBoard && currentBoard.users && currentBoard.users.length > 0" class="flex items-center ml-4">
+         <div v-if="currentBoard && currentBoard.users && currentBoard.users.length > 0" class="flex items-center ml-4 mr-2">
             <div class="flex -space-x-2">
                 <button
                     v-for="(member, index) in currentBoard.users.slice(0, 5)"
@@ -324,8 +326,11 @@
     />
 
     <!-- Background Picker Modal -->
-    <div v-if="showBackgroundPicker && currentBoard" class="fixed inset-0 z-[100] flex items-start justify-center pt-20" @click.self="showBackgroundPicker = false">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-96" @click.stop>
+    <Teleport to="body">
+      <template v-if="showBackgroundPicker && currentBoard">
+        <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75" style="z-index: 99999;" @click="showBackgroundPicker = false"></div>
+        <div class="fixed inset-0 flex items-center justify-center pointer-events-none" style="z-index: 100000;">
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-96 pointer-events-auto" @click.stop>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200">Board Background</h3>
@@ -395,13 +400,18 @@
                     Photos provided by <a href="https://unsplash.com" target="_blank" class="underline hover:text-gray-600">Unsplash</a>
                 </p>
             </div>
+          </div>
         </div>
-    </div>
+      </template>
+    </Teleport>
 
     <!-- Members Modal -->
-    <div v-if="showMembersModal && currentBoard" class="fixed inset-0 z-[100] flex items-start justify-center pt-20" @click.self="showMembersModal = false">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-[480px]" @click.stop>
-            <div class="p-4">
+    <Teleport to="body">
+      <template v-if="showMembersModal && currentBoard">
+        <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75" style="z-index: 99999;" @click="showMembersModal = false"></div>
+        <div class="fixed inset-0 flex items-center justify-center pointer-events-none" style="z-index: 100000;">
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-[480px] max-h-[80vh] overflow-hidden flex flex-col pointer-events-auto" @click.stop>
+            <div class="p-4 flex flex-col flex-1 overflow-hidden">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200">Board Members</h3>
                     <button @click="showMembersModal = false" class="text-gray-400 hover:text-gray-600">
@@ -461,8 +471,8 @@
                         <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
                     </div>
                     <div v-else class="space-y-2 max-h-64 overflow-y-auto">
-                        <div v-for="member in boardMembers" :key="member.id" class="flex items-center gap-3 p-2 rounded-lg" :class="member.is_global_admin ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'">
-                            <img :src="member.avatar_url" class="w-8 h-8 rounded-full" />
+                        <div v-for="member in boardMembers" :key="member.id" class="flex items-center gap-3 px-3 py-2 rounded-lg" :class="member.is_global_admin ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'">
+                            <img :src="member.avatar_url" class="w-8 h-8 rounded-full flex-shrink-0" />
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex items-center gap-1">
                                     {{ member.name }}
@@ -496,13 +506,15 @@
                     </div>
                 </div>
 
-                <p class="text-xs text-gray-400 mt-4">
+                <p class="text-xs text-gray-400 mt-4 flex-shrink-0">
                     <span class="inline-block w-2 h-2 bg-blue-100 dark:bg-blue-800 rounded mr-1"></span>
                     <strong>Global</strong> users have access to all boards and cannot be removed.
                 </p>
             </div>
+          </div>
         </div>
-    </div>
+      </template>
+    </Teleport>
 
     <!-- Delete Board Modal -->
     <Modal :show="showDeleteBoardModal" @close="showDeleteBoardModal = false" role="dialog">
@@ -2076,12 +2088,14 @@ export default {
   color: var(--colors-primary-500) !important;
 }
 
-/* Board totals tooltip hover */
+/* Board totals tooltip hover - shows on hover of the numbers only */
 .board-totals-tooltip {
   display: none;
+  pointer-events: none;
 }
 .board-totals-wrapper:hover .board-totals-tooltip {
   display: block;
+  pointer-events: auto;
 }
 
 /* Expanded board - fills entire viewport */
