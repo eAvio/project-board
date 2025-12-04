@@ -468,13 +468,52 @@ class ImportTrelloBoardJob implements ShouldQueue
 
                             if ($downloadUrl) {
                                 try {
-                                    $card->addMediaFromUrl($downloadUrl)
-                                        ->usingFileName($fileName)
-                                        ->toMediaCollection($collection);
+                                    // The download URL also requires authentication - append key/token
+                                    $downloadUrlParts = parse_url($downloadUrl);
+                                    $downloadQuery = [];
+                                    if (!empty($downloadUrlParts['query'])) {
+                                        parse_str($downloadUrlParts['query'], $downloadQuery);
+                                    }
+                                    $downloadQuery['key'] = $this->trelloApiKey;
+                                    $downloadQuery['token'] = $this->trelloApiToken;
+                                    
+                                    $authenticatedDownloadUrl = ($downloadUrlParts['scheme'] ?? 'https') . '://' 
+                                        . ($downloadUrlParts['host'] ?? 'trello.com') 
+                                        . ($downloadUrlParts['path'] ?? '') 
+                                        . '?' . http_build_query($downloadQuery);
+                                    
+                                    Log::info("[TrelloImport] Downloading with auth from: " . substr($authenticatedDownloadUrl, 0, 100) . '...');
+                                    
+                                    // Download file content with authentication
+                                    $fileResponse = Http::timeout(120)->get($authenticatedDownloadUrl);
+                                    
+                                    if ($fileResponse->successful()) {
+                                        $fileContent = $fileResponse->body();
+                                        $tempPath = sys_get_temp_dir() . '/' . uniqid('trello_') . '_' . $fileName;
+                                        
+                                        file_put_contents($tempPath, $fileContent);
+                                        
+                                        Log::info("[TrelloImport] Downloaded {$fileName} to temp: {$tempPath} (" . strlen($fileContent) . " bytes)");
+                                        
+                                        $card->addMedia($tempPath)
+                                            ->usingFileName($fileName)
+                                            ->toMediaCollection($collection);
+                                        
+                                        // Clean up temp file (MediaLibrary moves it, but just in case)
+                                        if (file_exists($tempPath)) {
+                                            @unlink($tempPath);
+                                        }
 
-                                    $this->stats['attachments_downloaded']++;
-                                    Log::info("[TrelloImport] Successfully downloaded Trello attachment via metadata URL: {$fileName}");
-                                    return;
+                                        $this->stats['attachments_downloaded']++;
+                                        Log::info("[TrelloImport] Successfully imported Trello attachment: {$fileName}");
+                                        return;
+                                    } else {
+                                        Log::warning("[TrelloImport] Authenticated download failed", [
+                                            'file' => $fileName,
+                                            'status' => $fileResponse->status(),
+                                            'body' => substr($fileResponse->body(), 0, 200),
+                                        ]);
+                                    }
                                 } catch (\Exception $e) {
                                     Log::warning("[TrelloImport] Download from metadata URL failed", [
                                         'file' => $fileName,
