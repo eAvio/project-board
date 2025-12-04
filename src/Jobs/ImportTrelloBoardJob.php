@@ -468,24 +468,22 @@ class ImportTrelloBoardJob implements ShouldQueue
 
                             if ($downloadUrl) {
                                 try {
-                                    // The download URL also requires authentication - append key/token
+                                    // Trello requires OAuth1 with HMAC-SHA1 signature for attachment downloads
+                                    // Build the download URL on api.trello.com domain
                                     $downloadUrlParts = parse_url($downloadUrl);
-                                    $downloadQuery = [];
-                                    if (!empty($downloadUrlParts['query'])) {
-                                        parse_str($downloadUrlParts['query'], $downloadQuery);
-                                    }
-                                    $downloadQuery['key'] = $this->trelloApiKey;
-                                    $downloadQuery['token'] = $this->trelloApiToken;
+                                    $apiDownloadUrl = 'https://api.trello.com' . ($downloadUrlParts['path'] ?? '');
                                     
-                                    $authenticatedDownloadUrl = ($downloadUrlParts['scheme'] ?? 'https') . '://' 
-                                        . ($downloadUrlParts['host'] ?? 'trello.com') 
-                                        . ($downloadUrlParts['path'] ?? '') 
-                                        . '?' . http_build_query($downloadQuery);
+                                    // Generate OAuth1 signature
+                                    $oauthHeader = $this->generateOAuth1Header('GET', $apiDownloadUrl);
                                     
-                                    Log::info("[TrelloImport] Downloading with auth from: " . substr($authenticatedDownloadUrl, 0, 100) . '...');
+                                    Log::info("[TrelloImport] Downloading with OAuth1 from: " . $apiDownloadUrl);
                                     
-                                    // Download file content with authentication
-                                    $fileResponse = Http::timeout(120)->get($authenticatedDownloadUrl);
+                                    // Download file content with OAuth1 authentication header
+                                    $fileResponse = Http::timeout(120)
+                                        ->withHeaders([
+                                            'Authorization' => $oauthHeader,
+                                        ])
+                                        ->get($apiDownloadUrl);
                                     
                                     if ($fileResponse->successful()) {
                                         $fileContent = $fileResponse->body();
@@ -508,7 +506,7 @@ class ImportTrelloBoardJob implements ShouldQueue
                                         Log::info("[TrelloImport] Successfully imported Trello attachment: {$fileName}");
                                         return;
                                     } else {
-                                        Log::warning("[TrelloImport] Authenticated download failed", [
+                                        Log::warning("[TrelloImport] OAuth1 download failed", [
                                             'file' => $fileName,
                                             'status' => $fileResponse->status(),
                                             'body' => substr($fileResponse->body(), 0, 200),
@@ -780,5 +778,69 @@ class ImportTrelloBoardJob implements ShouldQueue
                 );
             }
         }
+    }
+
+    /**
+     * Generate OAuth1 Authorization header for Trello API requests.
+     * Trello requires OAuth1 with HMAC-SHA1 signature for attachment downloads.
+     */
+    protected function generateOAuth1Header(string $method, string $url): string
+    {
+        $consumerKey = $this->trelloApiKey;
+        $token = $this->trelloApiToken;
+        
+        // For Trello, the consumer secret is empty string when using API key auth
+        // and the token secret is also empty
+        $consumerSecret = '';
+        $tokenSecret = '';
+        
+        // OAuth1 parameters
+        $oauthParams = [
+            'oauth_consumer_key' => $consumerKey,
+            'oauth_token' => $token,
+            'oauth_signature_method' => 'HMAC-SHA1',
+            'oauth_timestamp' => (string) time(),
+            'oauth_nonce' => bin2hex(random_bytes(16)),
+            'oauth_version' => '1.0',
+        ];
+        
+        // Parse URL to get base URL and query params
+        $urlParts = parse_url($url);
+        $baseUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . ($urlParts['path'] ?? '');
+        
+        // Combine OAuth params with any URL query params
+        $queryParams = [];
+        if (!empty($urlParts['query'])) {
+            parse_str($urlParts['query'], $queryParams);
+        }
+        $allParams = array_merge($queryParams, $oauthParams);
+        
+        // Sort parameters alphabetically by key
+        ksort($allParams);
+        
+        // Build parameter string
+        $paramString = http_build_query($allParams, '', '&', PHP_QUERY_RFC3986);
+        
+        // Build signature base string
+        $signatureBaseString = strtoupper($method) . '&' 
+            . rawurlencode($baseUrl) . '&' 
+            . rawurlencode($paramString);
+        
+        // Build signing key
+        $signingKey = rawurlencode($consumerSecret) . '&' . rawurlencode($tokenSecret);
+        
+        // Generate signature
+        $signature = base64_encode(hash_hmac('sha1', $signatureBaseString, $signingKey, true));
+        
+        // Add signature to OAuth params
+        $oauthParams['oauth_signature'] = $signature;
+        
+        // Build Authorization header
+        $headerParts = [];
+        foreach ($oauthParams as $key => $value) {
+            $headerParts[] = rawurlencode($key) . '="' . rawurlencode($value) . '"';
+        }
+        
+        return 'OAuth ' . implode(', ', $headerParts);
     }
 }
