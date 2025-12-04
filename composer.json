@@ -1,0 +1,50 @@
+{
+    "name": "eavio/project-board",
+    "description": "Advanced Kanban Project Board resource tool for Laravel Nova with full Trello import support, drag-and-drop boards, task tracking, deadlines, assignees, labels, comments, file attachments, checklists, and real-time activity feed.",
+    "keywords": [
+        "laravel",
+        "nova",
+        "kanban",
+        "project-board",
+        "project-management",
+        "trello-import",
+        "task-management"
+    ],
+    "type": "laravel-nova-tool",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "eAvio Aero",
+            "email": "dev@eavio.aero",
+            "homepage": "https://eavio.aero",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/eAvio/project-board",
+    "require": {
+        "php": "^8.1|^8.2|^8.3",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "laravel/nova": "^5.0",
+        "spatie/laravel-medialibrary": "^10.15|^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Eavio\\ProjectBoard\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eavio\\ProjectBoard\\ToolServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

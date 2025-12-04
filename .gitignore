@@ -1,0 +1,14 @@
+/.idea
+/vendor
+/node_modules
+/auth.json
+composer.phar
+composer.lock
+package-lock.json
+phpunit.xml
+.phpunit.result.cache
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*

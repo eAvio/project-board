@@ -1,0 +1,724 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ProjectBoard API",
+    "description": "API for managing Kanban boards, columns, cards, and tasks. Returns full board details including all columns, cards, members, and totals. The default_board_id in listBoards response indicates the most recently updated board - use this when user doesn't specify a board. Labels are global and can be used on any board.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://your-domain.com",
+      "description": "Server URL is set dynamically when accessed via /project-board/openapi.json"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "ProjectBoard API token (generate from Nova → ProjectBoard → API Tokens)"
+      }
+    },
+    "schemas": {
+      "BoardFull": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "relation": {
+            "type": "object",
+            "nullable": true,
+            "description": "Related entity (e.g., Project, Location)",
+            "properties": {
+              "type": { "type": "string" },
+              "id": { "type": "integer" },
+              "name": { "type": "string" }
+            }
+          },
+          "user_role": { "type": "string", "enum": ["viewer", "member", "admin"] },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "estimated_hours": { "type": "number" },
+              "estimated_cost": { "type": "number" },
+              "actual_hours": { "type": "number" },
+              "actual_cost": { "type": "number" },
+              "total_cards": { "type": "integer" }
+            }
+          },
+          "columns": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Column" }
+          },
+          "members": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Member" }
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Column": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "order": { "type": "integer" },
+          "cards_count": { "type": "integer" },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "estimated_hours": { "type": "number" },
+              "estimated_cost": { "type": "number" },
+              "actual_hours": { "type": "number" },
+              "actual_cost": { "type": "number" }
+            }
+          },
+          "cards": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Card" }
+          }
+        }
+      },
+      "Card": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "column_id": { "type": "integer" },
+          "order": { "type": "integer" },
+          "estimated_hours": { "type": "number", "nullable": true },
+          "estimated_cost": { "type": "number", "nullable": true },
+          "actual_hours": { "type": "number", "nullable": true },
+          "actual_cost": { "type": "number", "nullable": true },
+          "due_date": { "type": "string", "format": "date-time", "nullable": true },
+          "labels": { "type": "array", "items": { "$ref": "#/components/schemas/Label" } },
+          "assignees": { "type": "array", "items": { "$ref": "#/components/schemas/Assignee" } },
+          "attachments": { "type": "array", "items": { "$ref": "#/components/schemas/Attachment" } },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string" }
+        }
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "color": { "type": "string" }
+        }
+      },
+      "Assignee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "email": { "type": "string" }
+        }
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "mime_type": { "type": "string" }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "body": { "type": "string" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "name": { "type": "string" }
+            }
+          },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/api/project-board/boards": {
+      "get": {
+        "operationId": "listBoards",
+        "summary": "List all boards with full details",
+        "description": "Returns all boards with columns, cards, members, and totals. The default_board_id is the most recently updated board - use this when user doesn't specify which board to work on. The labels array contains all global labels that can be applied to any card.",
+        "responses": {
+          "200": {
+            "description": "List of boards with full details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "boards": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/BoardFull" }
+                    },
+                    "total": { "type": "integer" },
+                    "default_board_id": { "type": "integer", "description": "ID of the most recently updated board" },
+                    "hint": { "type": "string" },
+                    "labels": {
+                      "type": "array",
+                      "description": "Global labels available across all boards",
+                      "items": { "$ref": "#/components/schemas/Label" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBoard",
+        "summary": "Create a new board",
+        "description": "Create a new board, optionally with columns and cards in one request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "description": "Board name" },
+                  "columns": {
+                    "type": "array",
+                    "description": "Optional columns to create with the board",
+                    "items": {
+                      "type": "object",
+                      "required": ["name"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "cards": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["title"],
+                            "properties": {
+                              "title": { "type": "string" },
+                              "description": { "type": "string" },
+                              "estimated_hours": { "type": "number" },
+                              "due_date": { "type": "string", "format": "date", "nullable": true }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Board created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "board": { "$ref": "#/components/schemas/BoardFull" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-board/boards/{id}": {
+      "get": {
+        "operationId": "getBoard",
+        "summary": "Get a board with full details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Board details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BoardFull" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateBoard",
+        "summary": "Update a board",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Board updated" }
+        }
+      }
+    },
+    "/api/project-board/boards/{id}/columns": {
+      "post": {
+        "operationId": "createColumn",
+        "summary": "Create a new column",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Column created" }
+        }
+      }
+    },
+    "/api/project-board/boards/{id}/columns-with-cards": {
+      "post": {
+        "operationId": "createColumnWithCards",
+        "summary": "Create a column with cards",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "cards"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "cards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["title"],
+                      "properties": {
+                        "title": { "type": "string" },
+                        "description": { "type": "string" },
+                        "estimated_hours": { "type": "number" },
+                        "due_date": { "type": "string", "format": "date", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Column created with cards" }
+        }
+      }
+    },
+    "/api/project-board/boards/{id}/cards/bulk": {
+      "post": {
+        "operationId": "bulkCreateCards",
+        "summary": "Create multiple cards at once",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cards"],
+                "properties": {
+                  "cards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["column_id", "title"],
+                      "properties": {
+                        "column_id": { "type": "integer" },
+                        "title": { "type": "string" },
+                        "description": { "type": "string" },
+                        "estimated_hours": { "type": "number" },
+                        "due_date": { "type": "string", "format": "date", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Cards created" }
+        }
+      }
+    },
+    "/api/project-board/boards/{id}/cards/bulk-update": {
+      "patch": {
+        "operationId": "bulkUpdateCards",
+        "summary": "Bulk update cards in a board",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cards"],
+                "properties": {
+                  "cards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["id"],
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "title": { "type": "string" },
+                        "description": { "type": "string" },
+                        "estimated_hours": { "type": "number" },
+                        "actual_hours": { "type": "number" },
+                        "due_date": { "type": "string", "format": "date", "nullable": true },
+                        "column_id": { "type": "integer", "description": "Move card to this column" },
+                        "labels": { "type": "array", "items": { "type": "integer" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Cards updated" }
+        }
+      }
+    },
+    "/api/project-board/columns/{id}": {
+      "patch": {
+        "operationId": "updateColumn",
+        "summary": "Update a column",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "order": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Column updated" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteColumn",
+        "summary": "Delete a column",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Column deleted" }
+        }
+      }
+    },
+    "/api/project-board/cards/search": {
+      "get": {
+        "operationId": "searchCards",
+        "summary": "Search cards",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "board_id",
+            "in": "query",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Search results" }
+        }
+      }
+    },
+    "/api/project-board/cards": {
+      "post": {
+        "operationId": "createCard",
+        "summary": "Create a new card",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["column_id", "title"],
+                "properties": {
+                  "column_id": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "estimated_hours": { "type": "number" },
+                  "due_date": { "type": "string", "format": "date", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Card created" }
+        }
+      }
+    },
+    "/api/project-board/cards/{id}": {
+      "get": {
+        "operationId": "getCard",
+        "summary": "Get card details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Card details" }
+        }
+      },
+      "patch": {
+        "operationId": "updateCard",
+        "summary": "Update a card",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "estimated_hours": { "type": "number" },
+                  "actual_hours": { "type": "number" },
+                  "due_date": { "type": "string", "format": "date", "nullable": true },
+                  "labels": { "type": "array", "items": { "type": "integer" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Card updated" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCard",
+        "summary": "Delete a card",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Card deleted" }
+        }
+      }
+    },
+    "/api/project-board/cards/{id}/move": {
+      "post": {
+        "operationId": "moveCard",
+        "summary": "Move a card to a different column",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["column_id"],
+                "properties": {
+                  "column_id": { "type": "integer" },
+                  "position": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Card moved" }
+        }
+      }
+    },
+    "/api/projects-board/cards/{id}/comments": {
+      "post": {
+        "operationId": "addComment",
+        "summary": "Add a comment to a card",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["body"],
+                "properties": {
+                  "body": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Comment added" }
+        }
+      }
+    },
+    "/api/project-board/cards/{id}/attachments": {
+      "post": {
+        "operationId": "addAttachment",
+        "summary": "Add an attachment to a card via URL",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Attachment added" }
+        }
+      }
+    }
+  }
+}
