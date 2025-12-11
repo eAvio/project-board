@@ -81,7 +81,7 @@
     <!-- Quick Edit / Actions Menu -->
     <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20" @click.stop>
         <Dropdown>
-            <template #default>
+            <template #trigger>
                 <button 
                     class="inline-flex items-center p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 hover:text-gray-500 active:text-gray-600 dark:hover:bg-gray-900 rounded-lg"
                 >
