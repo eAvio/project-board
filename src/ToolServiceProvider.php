@@ -8,6 +8,7 @@ use Laravel\Nova\Events\ServingNova;
 use Laravel\Nova\Nova;
 use Eavio\ProjectBoard\Http\Middleware\Authorize;
 use Eavio\ProjectBoard\Http\Middleware\AuthenticateApiToken;
+use Laravel\Nova\Http\Middleware\Authenticate;
 
 class ToolServiceProvider extends ServiceProvider
 {
@@ -52,11 +53,11 @@ class ToolServiceProvider extends ServiceProvider
         }
 
         // Nova UI routes
-        Nova::router(['nova', 'nova.auth', Authorize::class], 'project-board')
+        Nova::router(['nova', Authenticate::class, Authorize::class], 'project-board')
             ->group(__DIR__.'/../routes/inertia.php');
 
         // Nova API routes (for the tool UI)
-        Route::middleware(['nova', 'nova.auth', Authorize::class])
+        Route::middleware(['nova', Authenticate::class, Authorize::class])
             ->prefix('nova-vendor/project-board')
             ->group(__DIR__.'/../routes/api.php');
 
