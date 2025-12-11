@@ -35,10 +35,22 @@ export default {
         'document-text': 'document-text',
         'paper-clip': 'paper-clip',
         'chat-bubble-left': 'chat',
+        'chat-bubble-left-ellipsis': 'chat-alt',
         'archive-box': 'archive',
         'photo': 'photograph',
         'key': 'key',
         'arrow-up-tray': 'upload',
+        'arrow-top-right-on-square': 'external-link',
+        'bars-3-bottom-left': 'document-text', // Close approximation for description lines
+        'cog-6-tooth': 'cog',
+        'adjustments-horizontal': 'adjustments',
+        'funnel': 'filter',
+        'arrow-path': 'refresh',
+        'arrow-left': 'arrow-left',
+        'chevron-down': 'chevron-down',
+        'chevron-up': 'chevron-up',
+        'exclamation-triangle': 'exclamation',
+        'information-circle': 'information-circle',
       };
       
       return map[this.name] || this.name;

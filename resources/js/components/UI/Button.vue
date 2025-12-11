@@ -4,22 +4,21 @@
     type="button"
     v-bind="$attrs"
   >
-    <div v-if="icon" class="mr-2 flex items-center">
-        <!-- Use our compatibility icon if needed, or rely on global icon if we didn't import our wrapper locally in this component (we didn't). 
-             Users passing 'icon' prop expect an icon. 
-             Since this is a wrapper, we assume global 'icon' element is available or we slot it.
-             But the prompt logic implies we might use the wrapper Icon here? 
-             Let's use a dynamic component or just <icon> assuming global availability, but 'type' needs mapping. 
-             Ideally passed icon is just the name.
-        -->
-        <component :is="'icon'" :type="mapIcon(icon)" />
+    <div v-if="icon" :class="{ 'mr-2': hasContent }" class="flex items-center">
+        <Icon :name="icon" />
     </div>
     <slot />
   </button>
 </template>
 
 <script>
+import Icon from './Icon.vue'
+import { useSlots, computed } from 'vue'
+
 export default {
+  components: {
+    Icon
+  },
   props: {
     variant: {
         type: String,
@@ -34,26 +33,20 @@ export default {
         default: ''
     }
   },
-  methods: {
-    mapIcon(name) {
-         const map = {
-            'ellipsis-horizontal': 'dots-horizontal',
-            'plus': 'plus',
-            'trash': 'trash',
-         };
-         return map[name] || name;
-    }
+  setup(props, { slots }) {
+     const hasContent = computed(() => !!slots.default);
+     return { hasContent };
   },
   computed: {
     computedClasses() {
         let base = 'inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
         
         if (this.variant === 'ghost') {
-            return 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1';
+            return 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-1 inline-flex items-center justify-center transition-colors';
         }
 
         if (this.variant === 'link') {
-            base = 'text-sm font-bold cursor-pointer';
+            base = 'text-sm font-bold cursor-pointer inline-flex items-center';
             if (this.state === 'mellow') return base + ' text-gray-500 hover:text-gray-800';
             return base + ' text-primary-500 hover:text-primary-600';
         }

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Custom scrollbar (kept as it's not provided by Nova) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
