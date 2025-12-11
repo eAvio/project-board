@@ -1,5 +1,5 @@
 <template>
-  <div :class="[containerClass, { 'board-expanded': isFullscreen }]">
+  <div :class="[containerClass, 'project-board-wrapper', { 'board-expanded': isFullscreen }]">
     <div v-if="loading" class="flex items-center justify-center flex-1">
       <div class="text-gray-500 animate-pulse">Loading Board...</div>
     </div>

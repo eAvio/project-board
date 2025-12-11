@@ -6,7 +6,7 @@
         class="card-detail-modal !z-[100]"
         size="7xl"
     > 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-visible w-full max-w-5xl mx-auto">
+        <div class="project-board-wrapper bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-visible w-full max-w-5xl mx-auto">
 
             <!-- Modal content  max-w-[1500px] -->
             <div 

@@ -8,6 +8,7 @@ function generateColor(name) {
 }
 
 module.exports = {
+  important: '.project-board-wrapper',
   // prefix: 'pb-', // Removed to use standard Nova classes
   corePlugins: {
     preflight: false, 
