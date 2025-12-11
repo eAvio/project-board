@@ -1,1 +1,41 @@
-.custom-scrollbar::-webkit-scrollbar{width:8px}.custom-scrollbar::-webkit-scrollbar-track{background-color:rgba(0,0,0,.05);border-radius:4px}.custom-scrollbar::-webkit-scrollbar-thumb{background-color:rgba(156,163,175,.5);border-radius:4px}.custom-scrollbar::-webkit-scrollbar-thumb:hover{background-color:rgba(156,163,175,.7)}.card-detail-modal>div{max-width:1000px!important;width:95vw!important}.dark .CodeMirror-focused .CodeMirror-selected,.dark .CodeMirror-selected{background-color:#f87171!important}.dark .CodeMirror ::selection{background-color:#f87171;color:#fff}.dark .CodeMirror ::-moz-selection{background-color:#f87171;color:#fff}
+/* Custom scrollbar (kept as it's not provided by Nova) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+.card-detail-modal > div {
+  max-width: 1000px !important; /* or 1500px if you prefer */
+  width: 95vw !important;       /* responsive on smaller screens */  
+}
+.dark .CodeMirror-selected {
+  background-color: #f87171 !important; /* red-400 */
+}
+
+.dark .CodeMirror-focused .CodeMirror-selected {
+  background-color: #f87171 !important;
+}
+
+.dark .CodeMirror ::-moz-selection {
+  background-color: #f87171;
+  color: #ffffff;
+}
+
+.dark .CodeMirror ::selection {
+  background-color: #f87171;
+  color: #ffffff;
+}
+
+.dark .CodeMirror ::-moz-selection {
+  background-color: #f87171;
+  color: #ffffff;
+}

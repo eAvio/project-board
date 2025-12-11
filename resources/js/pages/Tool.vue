@@ -17,7 +17,7 @@
 
     <div v-else class="flex-1 overflow-x-auto overflow-y-hidden flex flex-col">
        <!-- Board Selection Tabs -->
-       <div class="flex items-end justify-between border-b border-gray-200 dark:border-gray-700 px-4 pt-2 pb-2 bg-white dark:bg-gray-800 flex-shrink-0">
+       <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-2 bg-white dark:bg-gray-800 flex-shrink-0 gap-2">
          <div class="flex space-x-1 overflow-x-auto no-scrollbar flex-1 mr-2">
             <div
                 v-for="board in boards"
@@ -56,7 +56,7 @@
          </div>
 
          <!-- Board Totals -->
-         <div v-if="currentBoard?.totals && hasBoardTotals" class="flex items-center text-xs space-x-4 mr-4 flex-shrink-0 text-gray-500 dark:text-gray-400">
+         <div v-if="currentBoard?.totals && hasBoardTotals" class="flex items-center text-xs space-x-3 flex-shrink-0 text-gray-500 dark:text-gray-400">
             <div class="relative board-totals-wrapper flex items-center space-x-4">
               <span v-if="currentBoard.totals.estimated_hours > 0 || currentBoard.totals.actual_hours > 0" class="cursor-help">
                 <span :class="boardHoursActualClass">{{ formatNum(currentBoard.totals.actual_hours) }}</span><template v-if="currentBoard.totals.estimated_hours > 0"> / {{ formatNum(currentBoard.totals.estimated_hours) }}</template> h
@@ -64,8 +64,11 @@
               <span v-if="currentBoard.totals.estimated_cost > 0 || currentBoard.totals.actual_cost > 0" class="cursor-help">
                 <span :class="boardCostActualClass">{{ formatNum(currentBoard.totals.actual_cost) }}</span><template v-if="currentBoard.totals.estimated_cost > 0"> / {{ formatNum(currentBoard.totals.estimated_cost) }}</template> €
               </span>
-              <!-- Board Breakdown Tooltip - positioned to the left so it doesn't cover buttons -->
-              <div class="board-totals-tooltip absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-3" style="width: 460px; z-index: 60;">
+              <!-- Board Breakdown Tooltip - compact panel directly below totals -->
+              <div
+                class="board-totals-tooltip absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-3"
+                style="z-index: 60; min-width: 260px; max-width: 460px;"
+              >
                 <div class="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-600 pb-1">Board Breakdown</div>
                 <div class="max-h-64 overflow-y-auto space-y-1">
                   <div v-for="card in boardCardsWithEstimates" :key="card.id" class="flex justify-between text-xs py-1 border-b border-gray-100 dark:border-gray-700 last:border-0">
@@ -87,28 +90,31 @@
             </button>
          </div>
          
-         <!-- Board Actions Dropdown -->
-         <div class="relative flex-shrink-0 ml-2 mr-2" v-click-outside="closeSearch">
-            <div class="relative z-10">
-                <Icon name="magnifying-glass" class="w-5 h-5 absolute ml-2 text-gray-400 pointer-events-none" style="top: 6px;" />
+         <!-- Search -->
+         <div class="relative flex-shrink-0" v-click-outside="closeSearch">
+            <div class="relative flex items-center">
+                <Icon
+                    name="magnifying-glass"
+                    class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
                 <input 
                     v-model="searchQuery" 
                     @input="onSearchInput"
                     @focus="showSearchResults = true"
                     type="search" 
                     placeholder="Search cards, comments..." 
-                    class="appearance-none rounded-full h-8 pl-10 w-64 bg-gray-100 dark:bg-gray-900 dark:focus:bg-gray-800 focus:bg-white focus:outline-none focus:ring focus:ring-primary-200 dark:focus:ring-gray-600"
+                    class="appearance-none rounded-full h-8 pl-10 pr-8 w-64 text-sm bg-gray-100 dark:bg-gray-900 dark:focus:bg-gray-800 focus:bg-white focus:outline-none focus:ring focus:ring-primary-200 dark:focus:ring-gray-600"
                     role="search"
                     aria-label="Search"
                     spellcheck="false"
                 />
-                <div v-if="isSearching" class="absolute right-2.5 top-2">
+                <div v-if="isSearching" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                     <Loader class="w-4 h-4 text-gray-400" />
                 </div>
             </div>
 
             <!-- Search Results Dropdown -->
-            <div v-if="showSearchResults && (searchResults.length > 0 || searchQuery.length >= 2)" class="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 z-50 max-h-96 overflow-y-auto">
+            <div v-if="showSearchResults && (searchResults.length > 0 || searchQuery.length >= 2)" class="absolute left-0 top-full mt-1 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 z-50 max-h-80 overflow-y-auto">
                 <div v-if="searchResults.length === 0 && searchQuery.length >= 2 && !isSearching" class="p-4 text-center text-gray-500 text-sm">
                     No results found.
                 </div>
@@ -137,7 +143,7 @@
          </div>
 
          <!-- Board Members Avatars -->
-         <div v-if="currentBoard && currentBoard.users && currentBoard.users.length > 0" class="flex items-center ml-4 mr-2">
+         <div v-if="currentBoard && currentBoard.users && currentBoard.users.length > 0" class="flex items-center">
             <div class="flex -space-x-2">
                 <button
                     v-for="(member, index) in currentBoard.users.slice(0, 5)"
@@ -172,11 +178,11 @@
          </div>
 
          <!-- Fullscreen Button -->
-         <button @click="toggleFullscreen" class="flex-shrink-0 ml-2 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
+         <button @click="toggleFullscreen" class="flex-shrink-0 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
             <Icon :name="isFullscreen ? 'arrows-pointing-in' : 'arrows-pointing-out'" class="w-5 h-5" />
          </button>
 
-         <Dropdown class="flex-shrink-0 ml-1">
+         <Dropdown class="flex-shrink-0">
             <template #default>
                 <Button variant="ghost" icon="ellipsis-horizontal" />
             </template>
@@ -242,31 +248,33 @@
        </div>
 
        <!-- Kanban Board Area -->
-<div v-if="currentBoard" class="flex-1 flex items-start p-4 overflow-x-auto space-x-4 bg-cover bg-center bg-no-repeat transition-all duration-300" :class="{ 'min-h-screen': isFullscreen }" :style="[boardBackgroundStyle, !isFullscreen ? { minHeight: 'calc(100vh - 200px)' } : {}]">
+<div v-if="currentBoard" class="flex-1 flex items-stretch p-4 overflow-x-auto overflow-y-hidden space-x-4 bg-cover bg-center bg-no-repeat transition-all duration-300" :class="{ 'min-h-screen': isFullscreen }" :style="[boardBackgroundStyle, !isFullscreen ? { height: 'calc(100vh - 200px)' } : {}]">
             <draggable
             v-model="currentBoard.columns"
             group="columns"
             item-key="id"
-            class="flex h-full space-x-4"
+            class="flex space-x-4"
+            style="height: 100%;"
             ghost-class="opacity-50"
             handle=".column-drag-handle"
             @end="onColumnReorder"
           >
             <template #item="{ element: column }">
               <div 
-                 class="flex-shrink-0 flex-grow-0 h-full max-h-full focus:outline-none"
-                 style="width: 272px; min-width: 272px; max-width: 272px;"
+                 class="flex-shrink-0 flex-grow-0 focus:outline-none"
+                 style="width: 272px; min-width: 272px; max-width: 272px; height: 100%;"
                  @paste="onPaste($event, column)"
                  tabindex="0"
               >
                 <BoardColumn
                   :column="column"
                   :board-id="currentBoard.id"
+                  class="h-full"
                   @card-moved="onCardMoved"
                   @delete-column="deleteColumn"
                   @refresh-board="fetchBoards"
                   @edit-card="openCard"
-                />
+/>
               </div>
             </template>
           </draggable>
@@ -329,9 +337,10 @@
     <Teleport to="body">
       <template v-if="showBackgroundPicker && currentBoard">
         <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75" style="z-index: 99999;" @click="showBackgroundPicker = false"></div>
-        <div class="fixed inset-0 flex items-center justify-center pointer-events-none" style="z-index: 100000;">
-          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-96 pointer-events-auto" @click.stop>
-            <div class="p-4">
+        <div class="fixed inset-0 overflow-y-auto" style="z-index: 100000;">
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-96" @click.stop>
+              <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200">Board Background</h3>
                     <button @click="showBackgroundPicker = false" class="text-gray-400 hover:text-gray-600">
@@ -399,6 +408,7 @@
                 <p class="text-xs text-gray-400 mt-2">
                     Photos provided by <a href="https://unsplash.com" target="_blank" class="underline hover:text-gray-600">Unsplash</a>
                 </p>
+              </div>
             </div>
           </div>
         </div>
@@ -409,9 +419,10 @@
     <Teleport to="body">
       <template v-if="showMembersModal && currentBoard">
         <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75" style="z-index: 99999;" @click="showMembersModal = false"></div>
-        <div class="fixed inset-0 flex items-center justify-center pointer-events-none" style="z-index: 100000;">
-          <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-[480px] max-h-[80vh] overflow-hidden flex flex-col pointer-events-auto" @click.stop>
-            <div class="p-4 flex flex-col flex-1 overflow-hidden">
+        <div class="fixed inset-0 overflow-y-auto" style="z-index: 100000;">
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-600 w-[480px] max-h-[80vh] overflow-hidden flex flex-col" @click.stop>
+              <div class="p-4 flex flex-col flex-1 overflow-hidden">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200">Board Members</h3>
                     <button @click="showMembersModal = false" class="text-gray-400 hover:text-gray-600">
@@ -471,8 +482,8 @@
                         <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
                     </div>
                     <div v-else class="space-y-2 max-h-64 overflow-y-auto">
-                        <div v-for="member in boardMembers" :key="member.id" class="flex items-center gap-3 px-3 py-2 rounded-lg" :class="member.is_global_admin ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'">
-                            <img :src="member.avatar_url" class="w-8 h-8 rounded-full flex-shrink-0" />
+                        <div v-for="member in boardMembers" :key="member.id" class="flex items-center px-3 py-2 rounded-lg" :class="member.is_global_admin ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-700'">
+                            <img :src="member.avatar_url" class="w-8 h-8 rounded-full flex-shrink-0 mr-3" />
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex items-center gap-1">
                                     {{ member.name }}
@@ -510,6 +521,7 @@
                     <span class="inline-block w-2 h-2 bg-blue-100 dark:bg-blue-800 rounded mr-1"></span>
                     <strong>Global</strong> users have access to all boards and cannot be removed.
                 </p>
+              </div>
             </div>
           </div>
         </div>
@@ -922,7 +934,10 @@ import BoardColumn from '../components/BoardColumn.vue'
 import CardDetailModal from '../components/CardDetailModal.vue'
 import ArchivedItemsModal from '../components/ArchivedItemsModal.vue'
 import BackgroundPicker from '../components/BackgroundPicker.vue'
-import { Icon, Button, Dropdown, DropdownMenu, DropdownMenuItem, Modal, ModalHeader, ModalFooter } from 'laravel-nova-ui'
+import Button from '../components/UI/Button.vue'
+import Icon from '../components/UI/Icon.vue'
+import ModalHeader from '../components/UI/ModalHeader.vue'
+import ModalFooter from '../components/UI/ModalFooter.vue'
 
 export default {
   components: {
@@ -933,10 +948,6 @@ export default {
     BackgroundPicker,
     Icon,
     Button,
-    Dropdown,
-    DropdownMenu,
-    DropdownMenuItem,
-    Modal,
     ModalHeader,
     ModalFooter
   },

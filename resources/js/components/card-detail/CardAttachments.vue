@@ -104,15 +104,27 @@
         <Teleport to="body">
             <div 
                 v-if="lightboxMedia" 
-                class="fixed inset-0 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
+                class="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-pointer"
                 style="z-index: 99999;"
                 @click="closeLightbox"
                 @keydown.esc="closeLightbox"
             >
-                <div class="relative max-w-full max-h-full" @click.stop>
-                    <img :src="getMediaUrl(lightboxMedia)" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
-                    <button class="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors" @click="closeLightbox">
-                        <Icon name="x-mark" class="w-8 h-8" />
+                <!-- Image container with close button -->
+                <div class="inline-block" style="position: relative;" @click.stop>
+                    <img 
+                        :src="getMediaUrl(lightboxMedia)" 
+                        class="max-w-[95vw] max-h-[90vh] object-contain rounded-lg shadow-2xl cursor-default" 
+                    />
+                    <!-- Close button - inside image, top-right corner -->
+                    <button 
+                        class="group flex items-center justify-center w-8 h-8 rounded-full shadow-sm transition-all"
+                        style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.22);"
+                        @click.stop="closeLightbox"
+                        title="Close (Esc)"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.1" style="color: white; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
             </div>

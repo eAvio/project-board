@@ -14,8 +14,9 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 |
 */
 
-Route::get('/{board?}/{card?}', function (NovaRequest $request, $board = null, $card = null) {
+// Catch-all route to handle deep links like /o/3463-TR or /board/card
+Route::get('/{path?}', function (NovaRequest $request) {
     return inertia('ProjectsBoard', [
         'initialUser' => $request->user(),
     ]);
-});
+})->where('path', '.*');
