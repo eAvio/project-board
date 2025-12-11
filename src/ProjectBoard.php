@@ -16,7 +16,8 @@ class ProjectBoard extends Tool
     {
         // Register compiled assets for the tool and resource tool
         // This mirrors the working setup from SportPlus (Nova 5)
-        Nova::mix('project-board', __DIR__.'/../dist/mix-manifest.json');
+        Nova::script('project-board', __DIR__.'/../dist/js/tool.js');
+        Nova::style('project-board', __DIR__.'/../dist/css/tool.css');
     }
 
     public function authorize(Request $request): bool
