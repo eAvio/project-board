@@ -53,7 +53,8 @@
 </template>
 
 <script>
-import { Icon, Button } from 'laravel-nova-ui'
+import Icon from '../UI/Icon.vue'
+import Button from '../UI/Button.vue'
 import { marked } from 'marked'
 import EasyMDE from 'easymde'
 import 'easymde/dist/easymde.min.css' // Ensure styles are present

@@ -247,7 +247,8 @@
 <script>
 import draggable from 'vuedraggable'
 import BoardCard from './BoardCard.vue'
-import { Icon, Button } from 'laravel-nova-ui'
+import Icon from './UI/Icon.vue'
+import Button from './UI/Button.vue'
 import { formatDistanceToNow } from 'date-fns'
 
 export default {

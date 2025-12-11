@@ -197,7 +197,7 @@
 </template>
 
 <script>
-import { Icon } from 'laravel-nova-ui'
+import Icon from './UI/Icon.vue'
 import CardHeaderMeta from './card-detail/CardHeaderMeta.vue'
 import CardDescription from './card-detail/CardDescription.vue'
 import CardChecklist from './card-detail/CardChecklist.vue'

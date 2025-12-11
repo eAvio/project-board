@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { Icon } from 'laravel-nova-ui'
+import Icon from '../UI/Icon.vue'
 
 export default {
     components: { Icon },

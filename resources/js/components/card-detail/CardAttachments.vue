@@ -159,7 +159,8 @@
 </template>
 
 <script>
-import { Icon, Button } from 'laravel-nova-ui'
+import Icon from '../UI/Icon.vue'
+import Button from '../UI/Button.vue'
 import { formatDistanceToNow } from 'date-fns'
 
 export default {

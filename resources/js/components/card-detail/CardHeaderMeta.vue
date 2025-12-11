@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { Icon } from 'laravel-nova-ui'
+import Icon from '../UI/Icon.vue'
 import { format, isPast, isToday, parseISO } from 'date-fns'
 
 export default {
