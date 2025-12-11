@@ -151,7 +151,13 @@ class BoardController extends Controller
             }
         }
 
-        return Board::create($boardData);
+        $board = Board::create($boardData);
+
+        if ($user = auth()->user()) {
+            $board->users()->attach($user->id, ['role' => 'admin']);
+        }
+
+        return $board;
     }
 
     public function update(Request $request, Board $board)
