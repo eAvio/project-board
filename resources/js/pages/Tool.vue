@@ -183,7 +183,7 @@
          </button>
 
          <Dropdown class="flex-shrink-0">
-            <template #default>
+            <template #trigger>
                 <Button variant="ghost" icon="ellipsis-horizontal" />
             </template>
             <template #menu>
