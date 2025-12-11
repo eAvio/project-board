@@ -37,7 +37,8 @@ class ToolServiceProvider extends ServiceProvider
         ], 'project-board-migrations');
 
         Nova::serving(function (ServingNova $event) {
-            Nova::mix('project-board', __DIR__.'/../dist/mix-manifest.json');
+            Nova::script('project-board', __DIR__.'/../dist/js/tool.js');
+            Nova::style('project-board', __DIR__.'/../dist/css/tool.css');
         });
     }
 
