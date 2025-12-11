@@ -1,5 +1,7 @@
 let mix = require('laravel-mix')
 
+require('./nova.mix')
+
 mix
   .setPublicPath('dist')
   .js('resources/js/tool.js', 'js')
@@ -7,4 +9,5 @@ mix
   .postCss('resources/css/tool.css', 'css', [
     require('tailwindcss'),
     require('autoprefixer'),
-  ]);
+  ])
+  .nova('eavio/project-board')
